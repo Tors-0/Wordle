@@ -1,7 +1,5 @@
-import org.w3c.dom.Text;
-
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
+import java.awt.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -26,6 +24,11 @@ public class Wordle {
                 randomWordMap.put(currentChar,randomWordMap.get(currentChar) + 1);
             }
         }
+        for (char c = 'a'; c <= 'z'; c++) {
+            if (!randomWordMap.containsKey(c)) {
+                randomWordMap.put(c, 0);
+            }
+        }
     }
     /*
     These variables are used to be able to change the color of the text
@@ -35,27 +38,70 @@ public class Wordle {
     static final String RESET = "\u001B[0m";
     static final String GREEN = "\u001B[32m";
     static final String YELLOW = "\u001B[33m";
-
+    static final Toolkit tk = Toolkit.getDefaultToolkit();
     /*
     Scanner to be used throughout the program
      */
     static Scanner scanny = new Scanner(System.in);
 
     public static void main(String[] args){
-
+        boolean gameOver = false;
+        boolean playing = false;
+        System.out.printf("Welcome to %s%s! Type in a five letter word. You have six attempts to guess the correct word.%n", green("Wor"), yellow("dle"));
+        System.out.println("Type in a five letter word. I will give you feedback on each guess...");
+        String currentGuess = "";
+        playing = true;
+        while (playing) {
+            for (int g = 1; g <= 6; g++) {
+                currentGuess = scanny.nextLine();
+                currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
+                while (currentGuess.length() != 5) {
+                    tk.beep();
+                    System.out.println("Invalid guess, please try again:");
+                    currentGuess = scanny.nextLine();
+                    currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
+                }
+                System.out.println(checkString(currentGuess));
+                if (currentGuess.equals(randomWord)) {
+                    break;
+                }
+            }
+            System.out.println("You WIN!\nWould you like to play again? (y/n): ");
+            String selection = scanny.nextLine().toLowerCase();
+            playing = !selection.isEmpty() && selection.charAt(0) == 'y';
+        }
     }
-    public static void checkString(String guess) {
-        HashMap<Character,Integer> guessMap = new HashMap<>();
-        for (int i = 0; i < guess.length(); i++) {
-            char currentChar = guess.charAt(i);
-            if (!guessMap.containsKey(currentChar)) {
-                guessMap.put(currentChar, 1);
-            } else {
-                guessMap.put(currentChar, guessMap.get(currentChar) + 1);
+    public static String checkString(String guess) {
+        String[] formattedGuess = new String[5];
+        Arrays.fill(formattedGuess,"");
+        HashMap<Character,Integer> formattedGuessMap = new HashMap<>();
+        for (char c = 'a'; c <= 'z'; c++) { // populate the map for all lowercase chars (case irrelevant to current scope)
+            formattedGuessMap.put(c, 0);
+        }
+        for (int i = 0; i < formattedGuess.length; i++) {
+            formattedGuess[i] = String.valueOf(guess.charAt(i));
+        }
+        for (int i = 0; i < guess.length(); i++) { // create green characters in output
+            if (guess.charAt(i) == randomWord.charAt(i)) {
+                formattedGuess[i] = green(String.valueOf(guess.charAt(i)));
+                formattedGuessMap.put(guess.charAt(i), formattedGuessMap.get(guess.charAt(i)) + 1);
             }
         }
-        String formattedGuess = guess;
-
+        for (int i = 0; i < guess.length(); i++) { // create yellow characters in output
+            if (randomWord.indexOf(guess.charAt(i)) != -1) {
+                if (formattedGuessMap.get(guess.charAt(i)) < randomWordMap.get(guess.charAt(i))
+                        && formattedGuess[i].length() == 1
+                ) {
+                    formattedGuess[i] = yellow(String.valueOf(guess.charAt(i)));
+                    formattedGuessMap.put(guess.charAt(i), formattedGuessMap.get(guess.charAt(i)) + 1);
+                }
+            }
+        }
+        String formattedGuessFinal = "";
+        for (String s : formattedGuess) {
+            formattedGuessFinal += s;
+        }
+        return formattedGuessFinal;
     }
     public static String green(String text) {
         return GREEN + text + RESET;
