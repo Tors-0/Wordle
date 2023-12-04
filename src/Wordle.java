@@ -79,15 +79,14 @@ public class Wordle {
         System.out.print("Would you like to enable high contrast? (y/n): ");
         String userChoiceHCMode = scanny.nextLine().toLowerCase();
         highContrast = !userChoiceHCMode.isEmpty() && userChoiceHCMode.charAt(0) == 'y';
-        if (highContrast) {
-            System.out.printf("Welcome to %s%se! Type in a five letter word. You have six attempts to guess the correct word.%n",
-                    green("Wor"), yellow("dl"));
-        }
         String currentGuess = "";
         playing = true;
         while (playing) { // keep playing the game until the user indicates they no longer wish to play
             regenRandomWord();
             System.out.println("Type in a five letter word. I will give you feedback on each guess...");
+            System.out.printf("Letters highlighted in %s are in the correct position, %n" +
+                    "and letters highlighted in %s are in the word, but in the wrong position.%n",
+                    green(highContrast ? "red" : "green"), yellow(highContrast ? "blue" : "yellow"));
             for (int g = 1; g <= 6; g++) { // repeats 6 times for each of the users 6 guesses
                 System.out.printf("Turn %s: ", g);
                 currentGuess = scanny.nextLine();
