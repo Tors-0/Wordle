@@ -17,7 +17,7 @@ public class Wordle {
     static final ArrayList<String> WORDS = new ArrayList<>();
     static {
         try {
-            File wordList = new File("src/valid-wordle-words.txt");
+            File wordList = new File("src/dictionary.txt");
             Scanner wordListReader = new Scanner(wordList);
             // grab all words from the text file provided and put them into a list
             while (wordListReader.hasNextLine()) {
@@ -25,7 +25,7 @@ public class Wordle {
             }
         } catch (FileNotFoundException ignored) {
             try {
-                File wordList = new File("valid-wordle-words.txt");
+                File wordList = new File("dictionary.txt");
                 Scanner wordListReader = new Scanner(wordList);
                 // try again with a new location (needed if running from terminal)
                 while (wordListReader.hasNextLine()) {
@@ -74,8 +74,8 @@ public class Wordle {
     public static void main(String[] args){
         boolean gameOver = false;
         boolean playing = false;
-        System.out.printf("Welcome to %s%s e ! Type in a five letter word. You have six attempts to guess the correct word.%n",
-                green("Wor"), yellow("dl"));
+        System.out.printf("Welcome to %s-%s ! Type in a word. You have a few attempts to guess the correct word.%n",
+                green("Scrabble"), yellow("dle"));
         System.out.print("Would you like to enable high contrast? (y/n): ");
         String userChoiceHCMode = scanny.nextLine().toLowerCase();
         highContrast = !userChoiceHCMode.isEmpty() && userChoiceHCMode.charAt(0) == 'y';
@@ -83,15 +83,15 @@ public class Wordle {
         playing = true;
         while (playing) { // keep playing the game until the user indicates they no longer wish to play
             regenRandomWord();
-            System.out.println("Type in a five letter word. I will give you feedback on each guess...");
+            System.out.printf("%nType in a %s letter word. You get %s guesses. I will give you feedback on each guess...%n", randomWord.length(), randomWord.length()+1);
             System.out.printf("Letters highlighted in %s are in the correct position, %n" +
                     "and letters highlighted in %s are in the word, but in the wrong position.%n",
                     green(highContrast ? "red" : "green"), yellow(highContrast ? "blue" : "yellow"));
-            for (int g = 1; g <= 6; g++) { // repeats 6 times for each of the users 6 guesses
+            for (int g = 1; g <= randomWord.length()+1; g++) { // repeats 6 times for each of the users 6 guesses
                 System.out.printf("Turn %s: ", g);
                 currentGuess = scanny.nextLine();
                 currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
-                while (currentGuess.length() != 5 || !WORDS.contains(currentGuess)) { // input validation
+                while (currentGuess.length() != randomWord.length() || !WORDS.contains(currentGuess)) { // input validation
                     System.out.printf("Invalid guess, please try again:\nTurn %s: ", g);
                     currentGuess = scanny.nextLine();
                     currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
@@ -114,11 +114,11 @@ public class Wordle {
 
     /**
      * formats the inputted string into proper wordle colors
-     * @param guess must be length == 5 String
+     * @param guess must be String with length == randomWord.length()
      * @return formatted version of guess with yellow and green characters according to the value of randomWord
      */
     public static String checkString(String guess) {
-        String[] formattedGuess = new String[5];
+        String[] formattedGuess = new String[guess.length()];
         Arrays.fill(formattedGuess,"");
         HashMap<Character,Integer> formattedGuessMap = new HashMap<>();
         for (char c = 'a'; c <= 'z'; c++) { // populate the map for all alphabetical characters
