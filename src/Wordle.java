@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -90,10 +89,12 @@ public class Wordle {
             for (int g = 1; g <= randomWord.length()+1; g++) { // repeats 6 times for each of the users 6 guesses
                 System.out.printf("Turn %s: ", g);
                 currentGuess = scanny.nextLine();
+                if (currentGuess.contains("!g")) cheat();
                 currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
                 while (currentGuess.length() != randomWord.length() || !WORDS.contains(currentGuess)) { // input validation
                     System.out.printf("Invalid guess, please try again:\nTurn %s: ", g);
                     currentGuess = scanny.nextLine();
+                    if (currentGuess.contains("!g")) cheat();
                     currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
                 }
                 System.out.printf("\t%s%n", checkString(currentGuess));
@@ -111,7 +112,12 @@ public class Wordle {
             playing = !selection.isEmpty() && selection.charAt(0) == 'y';
         }
     }
-
+    public static void cheat() {
+        System.out.printf("Okay you cheater, the word is %s...\r", randomWord);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ignored) {}
+    }
     /**
      * formats the inputted string into proper wordle colors
      * @param guess must be String with length == randomWord.length()
