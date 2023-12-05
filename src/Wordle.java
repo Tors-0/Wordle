@@ -33,14 +33,17 @@ public class Wordle {
             } catch (FileNotFoundException ignored1) {}
         }
     }
-    static String randomWord;
+    static String randomWord = "";
     static HashMap<Character,Integer> randomWordMap = new HashMap<>();
 
     /**
      * resets the randomWord String...<br>handy for restarting the game
      */
     static void regenRandomWord() {
-        randomWord = WORDS.get((int) (Math.random() * WORDS.size()));
+        int randomLength = (int)(Math.pow(Math.random(),2) * 14) + 2;
+        while (randomWord.length() != randomLength) {
+            randomWord = WORDS.get((int) (Math.random() * WORDS.size()));
+        }
         for (char c = 'a'; c <= 'z'; c++) { // fill the randomWord's hashmap with all alphabetical characters
             randomWordMap.put(c, 0);
         }
@@ -65,58 +68,68 @@ public class Wordle {
     Scanner to be used throughout the program
      */
     static Scanner scanny = new Scanner(System.in);
+    static boolean gameOver = false;
+    static boolean playing = false;
     static boolean highContrast = false;
+    static String currentGuess = "";
     /**
      * Runs this file as intended!
      * @param args ignored
      */
     public static void main(String[] args){
-        boolean gameOver = false;
-        boolean playing = false;
         System.out.printf("Welcome to %s-%s ! Type in a word. You have a few attempts to guess the correct word.%n",
                 green("Scrabble"), yellow("dle"));
         System.out.print("Would you like to enable high contrast? (y/n): ");
         String userChoiceHCMode = scanny.nextLine().toLowerCase();
         highContrast = !userChoiceHCMode.isEmpty() && userChoiceHCMode.charAt(0) == 'y';
-        String currentGuess = "";
         playing = true;
         while (playing) { // keep playing the game until the user indicates they no longer wish to play
-            regenRandomWord();
-            System.out.printf("%nType in a %s letter word. You get %s guesses. I will give you feedback on each guess...%n", randomWord.length(), randomWord.length()+1);
-            System.out.printf("Letters highlighted in %s are in the correct position, %n" +
-                    "and letters highlighted in %s are in the word, but in the wrong position.%n",
-                    green(highContrast ? "red" : "green"), yellow(highContrast ? "blue" : "yellow"));
-            for (int g = 1; g <= randomWord.length()+1; g++) { // repeats 6 times for each of the users 6 guesses
-                System.out.printf("Turn %s: ", g);
-                currentGuess = scanny.nextLine();
-                if (currentGuess.contains("!g")) cheat();
-                currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
-                while (currentGuess.length() != randomWord.length() || !WORDS.contains(currentGuess)) { // input validation
-                    System.out.printf("Invalid guess, please try again:\nTurn %s: ", g);
-                    currentGuess = scanny.nextLine();
-                    if (currentGuess.contains("!g")) cheat();
-                    currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
-                }
-                System.out.printf("\t%s%n", checkString(currentGuess));
-                if (currentGuess.equals(randomWord)) {
-                    break;
-                }
-            }
-            if (currentGuess.equals(randomWord)) {
-                System.out.println("You WIN!");
-            } else {
-                System.out.printf("You lost =( The word was %s%n", randomWord);
-            }
+            gameOver = false;
+            gameLoop();
             System.out.println("Would you like to play again? (y/n): ");
             String selection = scanny.nextLine().toLowerCase();
             playing = !selection.isEmpty() && selection.charAt(0) == 'y';
         }
     }
-    public static void cheat() {
-        System.out.printf("Okay you cheater, the word is %s...\r", randomWord);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ignored) {}
+    public static void gameLoop() {
+        regenRandomWord();
+        System.out.printf("%nType in a %s letter word. You get %s guesses. I will give you feedback on each guess...%n", randomWord.length(), randomWord.length()+1);
+        System.out.printf("Letters highlighted in %s are in the correct position, %n" +
+                        "and letters highlighted in %s are in the word, but in the wrong position.%n",
+                green(highContrast ? "red" : "green"), yellow(highContrast ? "blue" : "yellow"));
+        for (int g = 1; g <= randomWord.length()+1 && !gameOver; g++) { // repeats 6 times for each of the users 6 guesses
+            System.out.printf("Turn %s: ", g);
+            currentGuess = scanny.nextLine();
+            cheatCodes();
+            currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
+            while (currentGuess.length() != randomWord.length() || !WORDS.contains(currentGuess)) { // input validation
+                System.out.printf("Turn %s: ", g);
+                currentGuess = scanny.nextLine();
+                cheatCodes();
+                currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
+            }
+            System.out.printf("\t%s%n", checkString(currentGuess));
+            if (currentGuess.equals(randomWord)) {
+                break;
+            }
+        }
+        if (currentGuess.equals(randomWord)) {
+            System.out.println("You WIN!");
+        } else {
+            System.out.printf("You lost =( The word was %s%n", randomWord);
+        }
+    }
+    public static void cheatCodes() {
+        if (currentGuess.contains("!g")) {
+            System.out.printf("Okay you cheater, the word is %s...\r", randomWord);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {
+            }
+            System.out.print("                                                     \r");
+        } else if (currentGuess.contains("!skip")) {
+            gameOver = true;
+        }
     }
     /**
      * formats the inputted string into proper wordle colors
