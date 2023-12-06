@@ -40,7 +40,7 @@ public class Wordle {
      * resets the randomWord String...<br>handy for restarting the game
      */
     static void regenRandomWord() {
-        int randomLength = (int)(Math.pow(Math.random(),2) * 14) + 2;
+        int randomLength = (int)(Math.random() * Math.random() * 14) + 2;
         while (randomWord.length() != randomLength) {
             randomWord = WORDS.get((int) (Math.random() * WORDS.size()));
         }
@@ -100,12 +100,12 @@ public class Wordle {
         for (int g = 1; g <= randomWord.length()+1 && !gameOver; g++) { // repeats 6 times for each of the users 6 guesses
             System.out.printf("Turn %s: ", g);
             currentGuess = scanny.nextLine();
-            cheatCodes();
+            currentGuess = cheatCodes();
             currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
             while (currentGuess.length() != randomWord.length() || !WORDS.contains(currentGuess)) { // input validation
                 System.out.printf("Turn %s: ", g);
                 currentGuess = scanny.nextLine();
-                cheatCodes();
+                currentGuess = cheatCodes();
                 currentGuess = currentGuess.toLowerCase().replaceAll("[^a-z]", "");
             }
             System.out.printf("\t%s%n", checkString(currentGuess));
@@ -113,13 +113,13 @@ public class Wordle {
                 break;
             }
         }
-        if (currentGuess.equals(randomWord)) {
+        if (currentGuess.equals(randomWord) && !gameOver) {
             System.out.println("You WIN!");
         } else {
             System.out.printf("You lost =( The word was %s%n", randomWord);
         }
     }
-    public static void cheatCodes() {
+    public static String cheatCodes() {
         if (currentGuess.contains("!g")) {
             System.out.printf("Okay you cheater, the word is %s...\r", randomWord);
             try {
@@ -127,9 +127,12 @@ public class Wordle {
             } catch (InterruptedException ignored) {
             }
             System.out.print("                                                     \r");
+            return "";
         } else if (currentGuess.contains("!skip")) {
             gameOver = true;
+            return randomWord;
         }
+        return currentGuess;
     }
     /**
      * formats the inputted string into proper wordle colors
